@@ -10,8 +10,11 @@ find_package(doctest MODULE REQUIRED)
 
 target_link_libraries(rmq_tests
   PRIVATE
-    rmq
+    rmq::rmq
+    parse_it::parse_it
     doctest::doctest
 )
+
+set_target_properties(rmq_tests PROPERTIES CXX_EXTENSIONS OFF)
 
 add_test(NAME rmq_tests COMMAND rmq_tests)

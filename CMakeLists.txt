@@ -15,7 +15,6 @@ set_project_warnings(project_warnings)
 # Link this 'library' to set the c++ standard / compile-time options requested
 add_library(project_options INTERFACE)
 target_compile_features(project_options INTERFACE cxx_std_20)
-set_target_properties(project_options PROPERTIES CXX_EXTENSIONS OFF)
 
 # Sanitizer options if supported by compiler.
 # Enable by using -DSANITIZE_ADDRESS=ON / -DSANITIZE_MEMORY=ON
@@ -25,6 +24,8 @@ enable_sanitizers(project_options)
 
 
 add_library(rmq INTERFACE)
+add_library(rmq::rmq ALIAS rmq)
+
 target_include_directories(rmq
   INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -36,6 +37,8 @@ target_link_libraries(rmq
     project_warnings
     project_options
 )
+
+add_subdirectory(extern/parse_it)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
