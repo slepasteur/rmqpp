@@ -1,0 +1,3 @@
+[submodule "extern/parse_it"]
+	path = extern/parse_it
+	url = ../../slepasteur/parse_it
