@@ -14,8 +14,8 @@ with pushd(build_dir):
         'cmake',
         '-DCMAKE_TOOLCHAIN_FILE=conan_paths.cmake',
         '-DCMAKE_MODULE_PATH=' + os.getcwd(),
-        '-DENABLE_SANITIZER_ADDRESS=ON',
-        '-DENABLE_SANITIZER_UNDEFINED_BEHAVIOR=ON',
+        '-DSANITIZE_ADDRESS=ON',
+        '-DSANITIZE_UNDEFINED_BEHAVIOR=ON',
         '..'])
     print("\nBuilding...")
     subprocess.run(['cmake', '--build', '.'])
