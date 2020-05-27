@@ -37,3 +37,7 @@ cmake-build*/*
 
 # Python
 __pycache__
+
+# IDEs
+.vscode
+.idea
