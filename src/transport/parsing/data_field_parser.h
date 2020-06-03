@@ -31,7 +31,8 @@ inline constexpr auto long_long_uint_parser = parse_it::integral_parser<long_lon
  * short-string = OCTET *string-char ; length + content
  * string-char = %x01 .. %xFF
  */
-inline constexpr auto short_string_parser = [](parse_it::parse_input_t input) -> parse_it::parse_result_t<short_string> {
+inline constexpr auto short_string_parser =
+  [](parse_it::parse_input_t input) -> parse_it::parse_result_t<short_string> {
   auto size = octet_parser(input);
 
   if (!size)
@@ -56,9 +57,37 @@ inline constexpr auto long_string_parser = [](parse_it::parse_input_t input) -> 
   return parse_it::fmap(byte_span_to_string, content_parser)(size->second);
 };
 
+/**
+ * boolean = OCTET ; 0 = FALSE, else TRUE
+ */
+inline constexpr auto bool_field_value_parser = parse_it::integral_parser<bool>();
+
+/**
+ * short-short-int = OCTET
+ */
+inline constexpr auto short_short_int_parser = parse_it::integral_parser<short_short_int>();
+
+/**
+ * short-short-uint = OCTET
+ */
+inline constexpr auto short_short_uint_parser = parse_it::integral_parser<short_short_uint>();
+
+/**
+ * short-int = 2*OCTET
+ */
+inline constexpr auto short_int_parser = parse_it::integral_parser<short_int>();
+
+/**
+ * long-int = 4*OCTET
+ */
+inline constexpr auto long_int_parser = parse_it::integral_parser<long_int>();
+
+/**
+ * field-value
+ */
 inline constexpr auto field_value_parser = [](parse_it::parse_input_t input) -> parse_it::parse_result_t<field_value> {
   using namespace parse_it::byte_litterals;
-  constexpr auto byte_to_bool = [](auto b){ return field_value(b != 0_b); };
+  constexpr auto byte_to_bool = [](auto b) { return field_value(b != 0_b); };
 
   auto type = parse_it::any_byte()(input);
   if (!type)
@@ -69,7 +98,19 @@ inline constexpr auto field_value_parser = [](parse_it::parse_input_t input) -> 
   switch (type->first)
   {
   case 't'_b:
-    return parse_it::fmap(byte_to_bool, parse_it::any_byte())(type->second);
+    return bool_field_value_parser(type->second);
+  case 'b'_b:
+    return short_short_int_parser(type->second);
+  case 'B'_b:
+    return short_short_uint_parser(type->second);
+  case 'U'_b:
+    return short_int_parser(type->second);
+  case 'u'_b:
+    return short_uint_parser(type->second);
+  case 'I'_b:
+    return long_int_parser(type->second);
+  case 'i'_b:
+    return long_uint_parser(type->second);
   }
 
   return std::nullopt;

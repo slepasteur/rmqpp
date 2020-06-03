@@ -73,7 +73,7 @@ TEST_CASE("Parsing a long string.")
   REQUIRE(parsing_result->first == std::string{"abcd"});
 }
 
-TEST_CASE("Parsing a field table.")
+TEST_CASE("Parsing field values.")
 {
   SUBCASE("Boolean field value true.")
   {
@@ -100,6 +100,100 @@ TEST_CASE("Parsing a field table.")
     auto field_value = parsing_result->first;
     std::visit(overloaded([](bool b) { REQUIRE(!b); }, [](auto) { FAIL("Invalid field value type."); }), field_value);
   }
+
+  SUBCASE("Short short int field value.")
+  {
+    std::array buffer{
+      'b'_b, // type (short-short-int)
+      0xFF_b // value (-1)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](rmq::short_short_int i) { REQUIRE(i == -1); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
+
+  SUBCASE("Short short uint field value.")
+  {
+    std::array buffer{
+      'B'_b, // type (short-short-uint)
+      0xFF_b // value (255)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](rmq::short_short_uint i) { REQUIRE(i == 255); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
+
+  SUBCASE("Short int field value.")
+  {
+    std::array buffer{
+      'U'_b,         // type (short-int)
+      0xFF_b, 0x00_b // value (-256)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](rmq::short_int i) { REQUIRE(i == -256); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
+
+  SUBCASE("Short uint field value.")
+  {
+    std::array buffer{
+      'u'_b,         // type (short-uint)
+      0xFF_b, 0x00_b // value (65280)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](rmq::short_uint i) { REQUIRE(i == 65280); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
+
+  SUBCASE("Long int field value.")
+  {
+    std::array buffer{
+      'I'_b,                         // type (long-int)
+      0xFF_b, 0xFF_b, 0x00_b, 0x00_b // value (-65536)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](rmq::long_int i) { REQUIRE(i == -65536); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
+
+  SUBCASE("Long uint field value.")
+  {
+    std::array buffer{
+      'i'_b,                         // type (long-uint)
+      0x00_b, 0x00_b, 0xFF_b, 0xFF_b // value (65535)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](rmq::long_uint i) { REQUIRE(i == 65535); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
+}
+
+TEST_CASE("Parsing a field table.")
+{
 
   SUBCASE("Field table.")
   {
