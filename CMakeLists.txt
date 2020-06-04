@@ -23,7 +23,10 @@ include(cmake/Sanitizers.cmake)
 enable_sanitizers(project_options)
 
 
-add_library(rmq src/transport/parsing/byte_span_to_string.cpp)
+add_library(rmq 
+  src/transport/parsing/byte_span_to_string.cpp
+  src/types.cpp
+)
 add_library(rmq::rmq ALIAS rmq)
 
 target_include_directories(rmq

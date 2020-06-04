@@ -220,6 +220,37 @@ TEST_CASE("Parsing field values.")
       overloaded([](rmq::long_long_uint i) { REQUIRE(i == 65535); }, [](auto) { FAIL("Invalid field value type."); }),
       field_value);
   }
+
+
+  SUBCASE("Float field value.")
+  {
+    std::array buffer{
+      'f'_b,                         // type (float)
+      0x3F_b, 0x80_b, 0x00_b, 0x00_b // value (1.0)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](float f) { REQUIRE(f == 1.0f); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
+
+  SUBCASE("Double field value.")
+  {
+    std::array buffer{
+      'd'_b,                         // type (double)
+      0x40_b, 0x08_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b // value (3.0)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](double d) { REQUIRE(d == 3.0); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
 }
 
 TEST_CASE("Parsing a field table.")
