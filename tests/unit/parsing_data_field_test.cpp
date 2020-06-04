@@ -190,6 +190,36 @@ TEST_CASE("Parsing field values.")
       overloaded([](rmq::long_uint i) { REQUIRE(i == 65535); }, [](auto) { FAIL("Invalid field value type."); }),
       field_value);
   }
+
+  SUBCASE("Long long int field value.")
+  {
+    std::array buffer{
+      'L'_b,                         // type (long-long-int)
+      0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0xFF_b, 0xFF_b // value (65535)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](rmq::long_long_int i) { REQUIRE(i == 65535); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
+
+  SUBCASE("Long long uint field value.")
+  {
+    std::array buffer{
+      'l'_b,                         // type (long-long-uint)
+      0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0xFF_b, 0xFF_b // value (65535)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](rmq::long_long_uint i) { REQUIRE(i == 65535); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
 }
 
 TEST_CASE("Parsing a field table.")

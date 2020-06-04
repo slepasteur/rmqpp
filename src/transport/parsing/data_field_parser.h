@@ -83,6 +83,11 @@ inline constexpr auto short_int_parser = parse_it::integral_parser<short_int>();
 inline constexpr auto long_int_parser = parse_it::integral_parser<long_int>();
 
 /**
+ * long-long-int = 8*OCTET
+ */
+inline constexpr auto long_long_int_parser = parse_it::integral_parser<long_long_int>();
+
+/**
  * field-value
  */
 inline constexpr auto field_value_parser = [](parse_it::parse_input_t input) -> parse_it::parse_result_t<field_value> {
@@ -111,6 +116,11 @@ inline constexpr auto field_value_parser = [](parse_it::parse_input_t input) -> 
     return long_int_parser(type->second);
   case 'i'_b:
     return long_uint_parser(type->second);
+  case 'L'_b:
+    return long_long_int_parser(type->second);
+  case 'l'_b:
+    return long_long_uint_parser(type->second);
+
   }
 
   return std::nullopt;
