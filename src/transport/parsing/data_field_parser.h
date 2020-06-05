@@ -108,10 +108,39 @@ inline constexpr auto decimal_parser = [](parse_it::parse_input_t input) -> pars
     long_int_parser)(input);
 };
 
+auto field_value_parser(parse_it::parse_input_t input) -> parse_it::parse_result_t<field_value>;
+
+/**
+ * field-array = long-int *field-value ; array of values
+ */
+inline constexpr auto field_array_parser = [](parse_it::parse_input_t input) -> parse_it::parse_result_t<field_array> {
+  auto size = long_int_parser(input);
+
+  if (!size)
+  {
+    return std::nullopt;
+  }
+
+  field_array array;
+  auto buffer = size->second;
+  for (int i = 0; i < size->first; ++i)
+  {
+    auto field = field_value_parser(buffer);
+    if (!field)
+    {
+      return std::nullopt;
+    }
+    buffer = field->second;
+    array.push_back(field->first);
+  }
+  return parse_it::parse_result_t<field_array>({array, buffer});
+};
+
 /**
  * field-value
  */
-inline constexpr auto field_value_parser = [](parse_it::parse_input_t input) -> parse_it::parse_result_t<field_value> {
+auto field_value_parser(parse_it::parse_input_t input) -> parse_it::parse_result_t<field_value>
+{
   using namespace parse_it::byte_litterals;
   constexpr auto byte_to_bool = [](auto b) { return field_value(b != 0_b); };
 
@@ -151,6 +180,8 @@ inline constexpr auto field_value_parser = [](parse_it::parse_input_t input) -> 
     return short_string_parser(type->second);
   case 'S'_b:
     return long_string_parser(type->second);
+  case 'A'_b:
+    return field_array_parser(type->second);
   }
 
   return std::nullopt;

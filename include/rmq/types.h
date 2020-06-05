@@ -25,10 +25,23 @@ struct decimal
   long_int number;
   octet scale;
 };
+struct field_wrapper;
+using field_array = std::vector<field_wrapper>;
 
 using field_value = std::variant<
   bool, short_short_int, short_short_uint, short_int, short_uint, long_int, long_uint, long_long_int, long_long_uint,
-  float, double, decimal, short_string, long_string>;
+  float, double, decimal, short_string, long_string, field_array>;
+
+struct field_wrapper
+{
+  field_value data;
+
+  template <typename... Ts>
+  field_wrapper(Ts&&... xs)
+      : data(std::forward<Ts>(xs)...)
+  {}
+};
+
 struct field
 {
   short_string name;
