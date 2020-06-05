@@ -149,6 +149,8 @@ inline constexpr auto field_value_parser = [](parse_it::parse_input_t input) -> 
     return decimal_parser(type->second);
   case 's'_b:
     return short_string_parser(type->second);
+  case 'S'_b:
+    return long_string_parser(type->second);
   }
 
   return std::nullopt;
