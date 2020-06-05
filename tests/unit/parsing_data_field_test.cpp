@@ -70,7 +70,7 @@ TEST_CASE("Parsing a long string.")
   const auto parsing_result = rmq::long_string_parser(buffer);
 
   REQUIRE(parsing_result);
-  REQUIRE(parsing_result->first == std::string{"abcd"});
+  REQUIRE(parsing_result->first == std::vector{'a'_b, 'b'_b, 'c'_b, 'd'_b});
 }
 
 TEST_CASE("Parsing field values.")
@@ -266,6 +266,23 @@ TEST_CASE("Parsing field values.")
     std::visit(
       overloaded([](rmq::decimal d) { REQUIRE(d.scale == 4); REQUIRE(d.number == -65536); }, [](auto) { FAIL("Invalid field value type."); }),
       field_value);
+  }
+
+  SUBCASE("Short string field value.")
+  {
+    std::array buffer{
+      's'_b,                         // type (short string)
+      0x04_b, // string size
+      'a'_b, 'b'_b, 'c'_b, 'd'_b // "abcd"
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](rmq::short_string s) { REQUIRE(s == "abcd"); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+
   }
 }
 

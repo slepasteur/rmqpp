@@ -12,7 +12,7 @@ using short_uint = std::uint16_t;
 using long_uint = std::uint32_t;
 using long_long_uint = std::uint64_t;
 using short_string = std::string;
-using long_string = std::string;
+using long_string = std::vector<std::byte>;
 
 // field table specific types
 using short_short_int = std::int8_t;

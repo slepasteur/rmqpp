@@ -54,7 +54,7 @@ inline constexpr auto long_string_parser = [](parse_it::parse_input_t input) -> 
     return std::nullopt;
   }
   auto content_parser = parse_it::n_bytes(size->first);
-  return parse_it::fmap(byte_span_to_string, content_parser)(size->second);
+  return parse_it::fmap([](auto bytes){ return std::vector(bytes.begin(), bytes.end()); }, content_parser)(size->second);
 };
 
 /**
@@ -145,6 +145,8 @@ inline constexpr auto field_value_parser = [](parse_it::parse_input_t input) -> 
     return double_parser(type->second);
   case 'D'_b:
     return decimal_parser(type->second);
+  case 's'_b:
+    return short_string_parser(type->second);
   }
 
   return std::nullopt;
