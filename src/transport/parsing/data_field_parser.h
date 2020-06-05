@@ -98,6 +98,15 @@ inline constexpr auto float_parser = parse_it::arithmetic_parser<float>();
 inline constexpr auto double_parser = parse_it::arithmetic_parser<double>();
 
 /**
+ * decimal-value = scale long-int
+ * scale = OCTET ; number of decimal digit
+ */
+inline constexpr auto decimal_parser = [](parse_it::parse_input_t input) -> parse_it::parse_result_t<decimal> {
+  return parse_it::combine([](octet scale, long_int number){ return decimal{.number = number, .scale = scale}; }, octet_parser, long_int_parser)(input);
+};
+
+
+/**
  * field-value
  */
 inline constexpr auto field_value_parser = [](parse_it::parse_input_t input) -> parse_it::parse_result_t<field_value> {
@@ -134,6 +143,8 @@ inline constexpr auto field_value_parser = [](parse_it::parse_input_t input) -> 
     return float_parser(type->second);
   case 'd'_b:
     return double_parser(type->second);
+  case 'D'_b:
+    return decimal_parser(type->second);
   }
 
   return std::nullopt;

@@ -251,6 +251,22 @@ TEST_CASE("Parsing field values.")
       overloaded([](double d) { REQUIRE(d == 3.0); }, [](auto) { FAIL("Invalid field value type."); }),
       field_value);
   }
+
+  SUBCASE("Decimal field value.")
+  {
+    std::array buffer{
+      'D'_b,                         // type (decimal)
+      0x04_b, // scale
+      0xFF_b, 0xFF_b, 0x00_b, 0x00_b // number (-65536)
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    auto field_value = parsing_result->first;
+    std::visit(
+      overloaded([](rmq::decimal d) { REQUIRE(d.scale == 4); REQUIRE(d.number == -65536); }, [](auto) { FAIL("Invalid field value type."); }),
+      field_value);
+  }
 }
 
 TEST_CASE("Parsing a field table.")
