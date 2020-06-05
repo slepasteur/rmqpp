@@ -54,7 +54,8 @@ inline constexpr auto long_string_parser = [](parse_it::parse_input_t input) -> 
     return std::nullopt;
   }
   auto content_parser = parse_it::n_bytes(size->first);
-  return parse_it::fmap([](auto bytes){ return std::vector(bytes.begin(), bytes.end()); }, content_parser)(size->second);
+  return parse_it::fmap([](auto bytes) { return std::vector(bytes.begin(), bytes.end()); }, content_parser)(
+    size->second);
 };
 
 /**
@@ -102,9 +103,10 @@ inline constexpr auto double_parser = parse_it::arithmetic_parser<double>();
  * scale = OCTET ; number of decimal digit
  */
 inline constexpr auto decimal_parser = [](parse_it::parse_input_t input) -> parse_it::parse_result_t<decimal> {
-  return parse_it::combine([](octet scale, long_int number){ return decimal{.number = number, .scale = scale}; }, octet_parser, long_int_parser)(input);
+  return parse_it::combine(
+    [](octet scale, long_int number) { return decimal{.number = number, .scale = scale}; }, octet_parser,
+    long_int_parser)(input);
 };
-
 
 /**
  * field-value

@@ -194,7 +194,7 @@ TEST_CASE("Parsing field values.")
   SUBCASE("Long long int field value.")
   {
     std::array buffer{
-      'L'_b,                         // type (long-long-int)
+      'L'_b,                                                         // type (long-long-int)
       0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0xFF_b, 0xFF_b // value (65535)
     };
     const auto parsing_result = rmq::field_value_parser(buffer);
@@ -209,7 +209,7 @@ TEST_CASE("Parsing field values.")
   SUBCASE("Long long uint field value.")
   {
     std::array buffer{
-      'l'_b,                         // type (long-long-uint)
+      'l'_b,                                                         // type (long-long-uint)
       0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0xFF_b, 0xFF_b // value (65535)
     };
     const auto parsing_result = rmq::field_value_parser(buffer);
@@ -220,7 +220,6 @@ TEST_CASE("Parsing field values.")
       overloaded([](rmq::long_long_uint i) { REQUIRE(i == 65535); }, [](auto) { FAIL("Invalid field value type."); }),
       field_value);
   }
-
 
   SUBCASE("Float field value.")
   {
@@ -233,14 +232,13 @@ TEST_CASE("Parsing field values.")
     REQUIRE(parsing_result);
     auto field_value = parsing_result->first;
     std::visit(
-      overloaded([](float f) { REQUIRE(f == 1.0f); }, [](auto) { FAIL("Invalid field value type."); }),
-      field_value);
+      overloaded([](float f) { REQUIRE(f == 1.0f); }, [](auto) { FAIL("Invalid field value type."); }), field_value);
   }
 
   SUBCASE("Double field value.")
   {
     std::array buffer{
-      'd'_b,                         // type (double)
+      'd'_b,                                                         // type (double)
       0x40_b, 0x08_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b, 0x00_b // value (3.0)
     };
     const auto parsing_result = rmq::field_value_parser(buffer);
@@ -248,15 +246,14 @@ TEST_CASE("Parsing field values.")
     REQUIRE(parsing_result);
     auto field_value = parsing_result->first;
     std::visit(
-      overloaded([](double d) { REQUIRE(d == 3.0); }, [](auto) { FAIL("Invalid field value type."); }),
-      field_value);
+      overloaded([](double d) { REQUIRE(d == 3.0); }, [](auto) { FAIL("Invalid field value type."); }), field_value);
   }
 
   SUBCASE("Decimal field value.")
   {
     std::array buffer{
       'D'_b,                         // type (decimal)
-      0x04_b, // scale
+      0x04_b,                        // scale
       0xFF_b, 0xFF_b, 0x00_b, 0x00_b // number (-65536)
     };
     const auto parsing_result = rmq::field_value_parser(buffer);
@@ -264,16 +261,21 @@ TEST_CASE("Parsing field values.")
     REQUIRE(parsing_result);
     auto field_value = parsing_result->first;
     std::visit(
-      overloaded([](rmq::decimal d) { REQUIRE(d.scale == 4); REQUIRE(d.number == -65536); }, [](auto) { FAIL("Invalid field value type."); }),
+      overloaded(
+        [](rmq::decimal d) {
+          REQUIRE(d.scale == 4);
+          REQUIRE(d.number == -65536);
+        },
+        [](auto) { FAIL("Invalid field value type."); }),
       field_value);
   }
 
   SUBCASE("Short string field value.")
   {
     std::array buffer{
-      's'_b,                         // type (short string)
-      0x04_b, // string size
-      'a'_b, 'b'_b, 'c'_b, 'd'_b // "abcd"
+      's'_b,                      // type (short string)
+      0x04_b,                     // string size
+      'a'_b,  'b'_b, 'c'_b, 'd'_b // "abcd"
     };
     const auto parsing_result = rmq::field_value_parser(buffer);
 
@@ -282,7 +284,6 @@ TEST_CASE("Parsing field values.")
     std::visit(
       overloaded([](rmq::short_string s) { REQUIRE(s == "abcd"); }, [](auto) { FAIL("Invalid field value type."); }),
       field_value);
-
   }
 }
 

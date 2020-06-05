@@ -26,7 +26,9 @@ struct decimal
   octet scale;
 };
 
-using field_value = std::variant<bool, short_short_int, short_short_uint, short_int, short_uint, long_int, long_uint, long_long_int, long_long_uint, float, double, decimal, short_string, long_string>;
+using field_value = std::variant<
+  bool, short_short_int, short_short_uint, short_int, short_uint, long_int, long_uint, long_long_int, long_long_uint,
+  float, double, decimal, short_string, long_string>;
 struct field
 {
   short_string name;

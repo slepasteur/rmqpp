@@ -13,4 +13,4 @@ std::string byte_span_to_string(std::span<const std::byte> bytes)
   return result;
 }
 
-}
+} // namespace rmq
