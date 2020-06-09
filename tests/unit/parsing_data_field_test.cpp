@@ -310,10 +310,12 @@ TEST_CASE("Parsing field values.")
   {
     std::array buffer{
       'A'_b,                          // type field array
-      0x00_b, 0x00_b, 0x00_b, 0x01_b, // array size
+      0x00_b, 0x00_b, 0x00_b, 0x02_b, // array size
       'S'_b,                          // type (long string)
       0x00_b, 0x00_b, 0x00_b, 0x04_b, // string size
-      'a'_b,  'b'_b,  'c'_b,  'd'_b   // "abcd"
+      'a'_b,  'b'_b,  'c'_b,  'd'_b,  // "abcd"
+      'i'_b,                          // type (long-uint)
+      0x00_b, 0x00_b, 0xFF_b, 0xFF_b  // value (65535)
     };
     const auto parsing_result = rmq::field_value_parser(buffer);
 
@@ -322,8 +324,10 @@ TEST_CASE("Parsing field values.")
     std::visit(
       overloaded(
         [](rmq::field_array a) {
-          REQUIRE(a.size() == 1);
-          //REQUIRE(s == std::vector{'a'_b, 'b'_b, 'c'_b, 'd'_b});
+          REQUIRE(a.size() == 2);
+          REQUIRE(a[0].data == rmq::field_value(std::vector{'a'_b, 'b'_b, 'c'_b, 'd'_b}));
+          REQUIRE(std::holds_alternative<rmq::long_uint>(a[1].data));
+          REQUIRE(std::get<rmq::long_uint>(a[1].data) == rmq::long_uint(65535));
         },
         [](auto) { FAIL("Invalid field value type."); }),
       field_value);

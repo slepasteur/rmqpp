@@ -24,6 +24,7 @@ struct decimal
 {
   long_int number;
   octet scale;
+  auto operator<=>(const decimal&) const = default;
 };
 struct field_wrapper;
 using field_array = std::vector<field_wrapper>;
@@ -40,6 +41,8 @@ struct field_wrapper
   field_wrapper(Ts&&... xs)
       : data(std::forward<Ts>(xs)...)
   {}
+
+  auto operator<=>(const field_wrapper&) const = default;
 };
 
 struct field
