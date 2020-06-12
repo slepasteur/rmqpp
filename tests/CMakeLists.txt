@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.12)
 add_executable(rmq_tests 
   test_main.cpp
   unit/parsing_data_field_test.cpp
+  unit/parsing_field_value_test.cpp
+  unit/parsing_field_table_test.cpp
 )
 
 find_package(doctest MODULE REQUIRED)

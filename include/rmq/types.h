@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include <variant>
@@ -20,6 +21,9 @@ using short_short_uint = octet;
 using short_int = std::int16_t;
 using long_int = std::int32_t;
 using long_long_int = std::int64_t;
+using timestamp = std::chrono::system_clock::time_point;
+static_assert(sizeof(std::time_t) == sizeof(std::uint64_t), "Time must be represented as a 64bit value.");
+
 struct decimal
 {
   long_int number;
@@ -29,9 +33,12 @@ struct decimal
 struct field_wrapper;
 using field_array = std::vector<field_wrapper>;
 
+struct field;
+using field_table = std::vector<field>;
+
 using field_value = std::variant<
   bool, short_short_int, short_short_uint, short_int, short_uint, long_int, long_uint, long_long_int, long_long_uint,
-  float, double, decimal, short_string, long_string, field_array>;
+  float, double, decimal, short_string, long_string, field_array, timestamp, field_table>;
 
 struct field_wrapper
 {
@@ -49,7 +56,7 @@ struct field
 {
   short_string name;
   field_value value;
+  auto operator<=>(const field&) const = default;
 };
-using field_table = std::vector<field>;
 
 } // namespace rmq
