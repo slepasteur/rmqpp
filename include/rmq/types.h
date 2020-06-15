@@ -24,6 +24,11 @@ using long_long_int = std::int64_t;
 using timestamp = std::chrono::system_clock::time_point;
 static_assert(sizeof(std::time_t) == sizeof(std::uint64_t), "Time must be represented as a 64bit value.");
 
+struct unit
+{
+  auto operator<=>(const unit&) const = default;
+};
+
 struct decimal
 {
   long_int number;
@@ -38,7 +43,7 @@ using field_table = std::vector<field>;
 
 using field_value = std::variant<
   bool, short_short_int, short_short_uint, short_int, short_uint, long_int, long_uint, long_long_int, long_long_uint,
-  float, double, decimal, short_string, long_string, field_array, timestamp, field_table>;
+  float, double, decimal, short_string, long_string, field_array, timestamp, field_table, unit>;
 
 struct field_wrapper
 {

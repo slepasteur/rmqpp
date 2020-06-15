@@ -296,4 +296,19 @@ TEST_CASE("Parsing field values.")
         [](auto) { FAIL("Invalid field value type."); }),
       parsing_result->first);
   }
+
+  SUBCASE("No field (unit).")
+  {
+    std::array buffer{
+      'V'_b, // type unit
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    std::visit(
+      rmq::overloaded(
+        [](rmq::unit) { /*success*/ }, //
+        [](auto) { FAIL("Invalid field value type."); }),
+      parsing_result->first);
+  }
 }
