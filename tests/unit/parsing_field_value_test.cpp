@@ -297,6 +297,30 @@ TEST_CASE("Parsing field values.")
       parsing_result->first);
   }
 
+  SUBCASE("Field table.")
+  {
+    std::array buffer{
+      'F'_b,                          // type field table
+      0x00_b, 0x00_b, 0x00_b, 0x0A_b, // Field table size.
+      0x03_b, '$'_b,  '_'_b,  'f'_b,  // Field 1 name ($_f)
+      's'_b,                          // type (short string)
+      0x04_b,                         // string size
+      'a'_b,  'b'_b,  'c'_b,  'd'_b   // "abcd"
+    };
+    const auto parsing_result = rmq::field_value_parser(buffer);
+
+    REQUIRE(parsing_result);
+    std::visit(
+      rmq::overloaded(
+        [](rmq::field_table t) {
+          REQUIRE(t.size() == 1);
+          REQUIRE(t[0].name == "$_f");
+          REQUIRE(t[0].value == rmq::field_value(rmq::short_string{"abcd"}));
+        }, //
+        [](auto) { FAIL("Invalid field value type."); }),
+      parsing_result->first);
+  }
+
   SUBCASE("No field (unit).")
   {
     std::array buffer{

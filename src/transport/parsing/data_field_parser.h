@@ -122,7 +122,9 @@ inline constexpr auto decimal_parser = [](parse_it::parse_input_t input) -> pars
     long_int_parser)(input);
 };
 
-auto field_value_parser(parse_it::parse_input_t input) -> parse_it::parse_result_t<field_value>;
+inline auto field_value_parser(parse_it::parse_input_t input) -> parse_it::parse_result_t<field_value>;
+
+inline auto field_table_parser(parse_it::parse_input_t input) -> parse_it::parse_result_t<field_table>;
 
 /**
  * field-array = long-int *field-value ; array of values
@@ -198,37 +200,42 @@ inline auto field_value_parser(parse_it::parse_input_t input) -> parse_it::parse
     return field_array_parser(type->second);
   case 'T'_b:
     return timestamp_parser(type->second);
-    // TODO field table
+  case 'F'_b:
+    return field_table_parser(type->second);
   case 'V'_b:
     return unit_parser(type->second);
   }
 
   return std::nullopt;
-  };
+};
 
-  /**
+/**
  * field-value-pair = field-name field-value
  * field-name = short-string
  */
-  inline constexpr auto field_parser = [](parse_it::parse_input_t input) -> parse_it::parse_result_t<field> {
-    return parse_it::combine(
-      [](short_string name, field_value value) { return field{.name = name, .value = value}; }, short_string_parser,
-      field_value_parser)(input);
-  };
+inline constexpr auto field_parser = [](parse_it::parse_input_t input) -> parse_it::parse_result_t<field> {
+  return parse_it::combine(
+    [](short_string name, field_value value) { return field{.name = name, .value = value}; }, short_string_parser,
+    field_value_parser)(input);
+};
 
-  inline constexpr auto field_table_parser =
-    [](parse_it::parse_input_t input) -> parse_it::parse_result_t<field_table> {
-    auto size = long_uint_parser(input);
+/**
+ * field-table = long-uint *field-value-pair
+ */
+inline auto field_table_parser(parse_it::parse_input_t input) -> parse_it::parse_result_t<field_table>
+{
+  auto size = long_uint_parser(input);
 
-    if (!size)
-    {
-      return std::nullopt;
-    }
-    auto content_parser = parse_it::n_bytes(size->first);
-    field_table result;
-    return parse_it::many(field_parser, result, [](field_table&& t, field f) {
-      t.push_back(std::move(f));
-      return std::move(t);
-    })(size->second);
-  };
+  if (!size)
+  {
+    return std::nullopt;
+  }
+  auto content_parser = parse_it::n_bytes(size->first);
+  field_table result;
+  return parse_it::many(field_parser, result, [](field_table&& t, field f) {
+    t.push_back(std::move(f));
+    return std::move(t);
+  })(size->second);
+};
+
 } // namespace rmq
