@@ -25,6 +25,8 @@ enable_sanitizers(project_options)
 
 add_library(rmq 
   src/transport/parsing/byte_span_to_string.cpp
+  src/transport/serialization/serialize.cpp
+  src/transport/parsing/parse.cpp
   src/types.cpp
 )
 add_library(rmq::rmq ALIAS rmq)
@@ -40,6 +42,7 @@ target_link_libraries(rmq
   PRIVATE
     project_options
     project_warnings
+    parse_it::parse_it
 )
 set_target_properties(rmq PROPERTIES CXX_EXTENSIONS OFF)
 

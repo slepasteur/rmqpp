@@ -1,7 +1,10 @@
+#pragma once
+
 #include <ctime>
 #include <string>
 
 #include <parse_it/parser.h>
+#include <parse_it/utils/byte_litterals.h>
 
 #include "byte_span_to_string.h"
 #include "rmq/types.h"
@@ -158,7 +161,6 @@ inline constexpr auto field_array_parser = [](parse_it::parse_input_t input) -> 
 inline auto field_value_parser(parse_it::parse_input_t input) -> parse_it::parse_result_t<field_value>
 {
   using namespace parse_it::byte_litterals;
-  constexpr auto byte_to_bool = [](auto b) { return field_value(b != 0_b); };
 
   auto type = parse_it::any_byte()(input);
   if (!type)
@@ -207,7 +209,7 @@ inline auto field_value_parser(parse_it::parse_input_t input) -> parse_it::parse
   }
 
   return std::nullopt;
-};
+}
 
 /**
  * field-value-pair = field-name field-value
@@ -230,12 +232,12 @@ inline auto field_table_parser(parse_it::parse_input_t input) -> parse_it::parse
   {
     return std::nullopt;
   }
-  auto content_parser = parse_it::n_bytes(size->first);
+
   field_table result;
   return parse_it::many(field_parser, result, [](field_table&& t, field f) {
     t.push_back(std::move(f));
     return std::move(t);
   })(size->second);
-};
+}
 
 } // namespace rmq

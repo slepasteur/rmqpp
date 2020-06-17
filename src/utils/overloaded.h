@@ -1,3 +1,5 @@
+#pragma once
+
 namespace rmq {
 
 // Utility to ease visitation of variant.

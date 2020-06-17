@@ -64,4 +64,6 @@ struct field
   auto operator<=>(const field&) const = default;
 };
 
+using Buffer = std::vector<std::byte>;
+
 } // namespace rmq
