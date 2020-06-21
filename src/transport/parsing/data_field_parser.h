@@ -208,7 +208,7 @@ inline auto field_value_parser(parse_it::parse_input_t input) -> parse_it::parse
     return unit_parser(type->second);
   }
 
-  return std::nullopt;
+    return std::nullopt;
 }
 
 /**
@@ -233,11 +233,25 @@ inline auto field_table_parser(parse_it::parse_input_t input) -> parse_it::parse
     return std::nullopt;
   }
 
-  field_table result;
-  return parse_it::many(field_parser, result, [](field_table&& t, field f) {
+  auto content = parse_it::n_bytes(size->first)(size->second);
+
+  if (!content)
+  {
+    return std::nullopt;
+  }
+
+  auto result = parse_it::many(field_parser, field_table{}, [](field_table&& t, field f) {
     t.push_back(std::move(f));
     return std::move(t);
-  })(size->second);
+  })(content->first);
+
+  // Field table must consume the whole content buffer.
+  if (!result || result->second.size() != 0)
+  {
+    return std::nullopt;
+  }
+
+  return parse_it::parse_result_t<field_table>({std::move(result->first), content->second});
 }
 
 } // namespace rmq

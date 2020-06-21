@@ -10,16 +10,30 @@ add_executable(rmq_tests
 )
 
 find_package(doctest MODULE REQUIRED)
+find_package(Boost REQUIRED)
 
 target_link_libraries(rmq_tests
   PRIVATE
     project_options
     project_warnings
     rmq::rmq
-    parse_it::parse_it
     doctest::doctest
+    fmt::fmt
 )
 
 set_target_properties(rmq_tests PROPERTIES CXX_EXTENSIONS OFF)
 
 add_test(NAME rmq_tests COMMAND rmq_tests)
+
+add_executable(connect_test
+  manual/connect.cpp
+)
+
+target_link_libraries(connect_test
+  PRIVATE
+    project_options
+    project_warnings
+    rmq::rmq
+    Boost::Boost
+    fmt::fmt
+)

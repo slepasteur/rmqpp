@@ -28,6 +28,7 @@ add_library(rmq
   src/transport/serialization/serialize.cpp
   src/transport/parsing/parse.cpp
   src/types.cpp
+  src/utils/print.cpp
 )
 add_library(rmq::rmq ALIAS rmq)
 
@@ -38,11 +39,15 @@ target_include_directories(rmq
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
+find_package(fmt MODULE REQUIRED)
+
 target_link_libraries(rmq
+  PUBLIC
+    parse_it::parse_it
   PRIVATE
     project_options
     project_warnings
-    parse_it::parse_it
+    fmt::fmt
 )
 set_target_properties(rmq PROPERTIES CXX_EXTENSIONS OFF)
 
