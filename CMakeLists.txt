@@ -27,6 +27,7 @@ add_library(rmq
   src/transport/parsing/byte_span_to_string.cpp
   src/transport/serialization/serialize.cpp
   src/transport/parsing/parse.cpp
+  src/transport/connection.cpp
   src/types.cpp
   src/utils/print.cpp
 )

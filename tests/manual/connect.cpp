@@ -5,7 +5,10 @@
 #include <fmt/format.h>
 
 #include "rmq/messages/protocol_header.h"
+#include "rmq/transport/connection.h"
+#include "transport/parsing/parse.h"
 #include "transport/serialization/serialize.h"
+#include "utils/overloaded.h"
 
 using boost::asio::ip::tcp;
 
@@ -18,6 +21,36 @@ struct fmt::formatter<std::byte> : fmt::formatter<uint8_t>
     return formatter<uint8_t>::format(std::to_integer<uint8_t>(b), ctx);
   }
 };
+
+void handle_error(boost::system::error_code error)
+{
+  if (error == boost::asio::error::eof)
+  {
+    fmt::print("Connection closed.\n");
+    exit(0);
+  }
+  else if (error)
+  {
+    fmt::print("Error: {}\n", error.message());
+    exit(1);
+  }
+}
+
+void send_data(tcp::socket& socket, std::span<std::byte> buffer)
+{
+  boost::system::error_code error;
+  boost::asio::write(socket, boost::asio::buffer(buffer.data(), buffer.size()), error);
+  handle_error(error);
+}
+
+std::span<std::byte> read_data(tcp::socket& socket, std::span<std::byte> buffer)
+{
+  boost::system::error_code error;
+  size_t len = socket.read_some(boost::asio::buffer(buffer.data(), buffer.size()), error);
+  handle_error(error);
+  return buffer.first(len);
+}
+
 
 int main()
 {
@@ -34,38 +67,12 @@ int main()
     boost::asio::connect(socket, endpoints);
     fmt::print("Connected!\n");
 
-    fmt::print("Sending protocol header...\n");
-    rmq::Buffer buffer{};
-    rmq::serialize(rmq::ProtocolHeader{}, buffer);
-    boost::asio::write(socket, boost::asio::buffer(buffer), error);
-    if (error == boost::asio::error::eof)
-    {
-      fmt::print("Connection closed.\n");
-      return 0;
-    }
-    else if (error)
-    {
-      fmt::print("Error: {}\n", error.message());
-      return 1;
-    }
-    fmt::print("Protocol header sent!\n");
+    auto connection = rmq::Connection([&socket](std::span<std::byte> buffer) { send_data(socket, buffer); });
 
     std::array<std::byte, 2048> buf;
-    size_t len = socket.read_some(boost::asio::buffer(buf), error);
-
-    if (error == boost::asio::error::eof)
-    {
-      fmt::print("Connection closed.\n");
-      return 0;
-    }
-    else if (error)
-    {
-      fmt::print("Error: {}\n", error.message());
-      return 1;
-    }
-
-    auto received = std::span(buf.begin(), len);
-    fmt::print("Received\n\n [{:#X}_b]\n\n", fmt::join(received, "_b, "));
+    auto received = read_data(socket, buf);
+    connection.on_data(received);
+    //fmt::print("Received\n\n [{:#X}_b]\n\n", fmt::join(received, "_b, "));
   }
   catch (std::exception& e)
   {
