@@ -26,6 +26,21 @@ void send_message(const T& message, Sender& send, Buffer& send_buffer)
   send(send_buffer);
 }
 
+StartOk start_response(const Start&)
+{
+  auto client_properties = field_table{
+    field{.name = short_string{"product"}, .value = short_string{"rmqpp"}},
+    field{.name = short_string{"version"}, .value = short_string{"0.1"}},
+    field{
+      .name = short_string{"information"},
+      .value = short_string{"RabbitMQ client library for c++. Website: https://github.com/slepasteur/rmqpp"}}};
+
+  //start.mechanisms
+
+  //return StartOk { .client_properties = std::move(client_properties); }
+  return StartOk{};
+}
+
 } // namespace
 
 Connection::Connection(Sender sender)
@@ -40,7 +55,7 @@ Connection::Connection(Sender sender)
 void Connection::on_data(std::span<std::byte> data)
 {
   std::visit(
-    overloaded([data](details::Init) {
+    overloaded([this, data](details::Init) {
       auto start_parse = parse_start(data);
       if (!start_parse)
       {
@@ -51,9 +66,10 @@ void Connection::on_data(std::span<std::byte> data)
       const auto& start = start_parse->first;
       fmt::print("Broker version {}.{}\n", start.version_major, start.version_minor);
 
-      //        fmt::print("Sending start ok...\n");
-      //        send_message(rmq::StartOk{}, send_, send_buffer_);
-      //        fmt::print("Start ok sent!\n");
+      fmt::print("Sending start ok...\n");
+      start_response(start);
+      //send_message(rmq::StartOk{}, send_, send_buffer_);
+      fmt::print("Start ok sent!\n");
     }),
     state_);
 }
