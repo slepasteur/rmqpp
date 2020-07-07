@@ -34,6 +34,12 @@ constexpr inline auto serialize(T value, Buffer& buffer)
 
 void serialize(const short_string& str, Buffer& buffer);
 void serialize(const long_string& str, Buffer& buffer);
+void serialize(const decimal& dec, Buffer& buffer);
+void serialize(const timestamp& timestamp, Buffer& buffer);
+void serialize(const field_value& val, Buffer& buffer);
+void serialize(const field_array& array, Buffer& buffer);
+void serialize(const field& f, Buffer& buffer);
+void serialize(const field_table& table, Buffer& buffer);
 
 void serialize(ProtocolHeader, Buffer& buffer);
 void serialize(const Frame& frame, Buffer& buffer);

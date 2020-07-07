@@ -8,6 +8,7 @@
 
 #include "byte_span_to_string.h"
 #include "rmq/types.h"
+#include "transport/field_value_types.h"
 
 namespace rmq {
 
@@ -170,41 +171,41 @@ inline auto field_value_parser(parse_it::parse_input_t input) -> parse_it::parse
 
   switch (type->first)
   {
-  case 't'_b:
+  case BOOL_TYPE:
     return bool_field_value_parser(type->second);
-  case 'b'_b:
+  case SHORT_SHORT_INT_TYPE:
     return short_short_int_parser(type->second);
-  case 'B'_b:
+  case SHORT_SHORT_UINT_TYPE:
     return short_short_uint_parser(type->second);
-  case 'U'_b:
+  case SHORT_INT_TYPE:
     return short_int_parser(type->second);
-  case 'u'_b:
+  case SHORT_UINT_TYPE:
     return short_uint_parser(type->second);
-  case 'I'_b:
+  case LONG_INT_TYPE:
     return long_int_parser(type->second);
-  case 'i'_b:
+  case LONG_UINT_TYPE:
     return long_uint_parser(type->second);
-  case 'L'_b:
+  case LONG_LONG_INT_TYPE:
     return long_long_int_parser(type->second);
-  case 'l'_b:
+  case LONG_LONG_UINT_TYPE:
     return long_long_uint_parser(type->second);
-  case 'f'_b:
+  case FLOAT_TYPE:
     return float_parser(type->second);
-  case 'd'_b:
+  case DOUBLE_TYPE:
     return double_parser(type->second);
-  case 'D'_b:
+  case DECIMAL_TYPE:
     return decimal_parser(type->second);
-  case 's'_b:
+  case SHORT_STRING_TYPE:
     return short_string_parser(type->second);
-  case 'S'_b:
+  case LONG_STRING_TYPE:
     return long_string_parser(type->second);
-  case 'A'_b:
+  case FIELD_ARRAY_TYPE:
     return field_array_parser(type->second);
-  case 'T'_b:
+  case TIMESTAMP_TYPE:
     return timestamp_parser(type->second);
-  case 'F'_b:
+  case FIELD_TABLE_TYPE:
     return field_table_parser(type->second);
-  case 'V'_b:
+  case UNIT_TYPE:
     return unit_parser(type->second);
   }
 
