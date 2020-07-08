@@ -4,8 +4,10 @@
 #include <parse_it/utils/byte_litterals.h>
 
 #include "data_field_parser.h"
+#include "messages/class_ids.h"
 #include "messages/frame.h"
 #include "messages/method_header.h"
+#include "messages/method_ids.h"
 
 using namespace parse_it::byte_litterals;
 
@@ -52,9 +54,16 @@ auto parse_frame(std::span<std::byte> buffer) -> parse_it::parse_result_t<Frame>
 constexpr auto parse_method_header = parse_it::combine(
   [](short_uint class_id, short_uint method_id) { return MethodHeader{.class_id = class_id, .method_id = method_id}; },
   short_uint_parser, short_uint_parser);
-}
 
-auto parse_start(std::span<std::byte> buffer) -> parse_it::parse_result_t<Start>
+struct Headers
+{
+  Frame frame;
+  MethodHeader method;
+  std::span<const std::byte> payload;
+};
+
+auto parse_headers(std::span<std::byte> buffer, ClassId class_id, short_uint method_id)
+  -> parse_it::parse_result_t<Headers>
 {
   const auto frame = parse_frame(buffer);
   if (!frame)
@@ -68,7 +77,23 @@ auto parse_start(std::span<std::byte> buffer) -> parse_it::parse_result_t<Start>
     return std::nullopt;
   }
 
-  if (header->first.class_id != 10 || header->first.method_id != 10)
+  if (header->first.class_id != class_id || header->first.method_id != method_id)
+  {
+    return std::nullopt;
+  }
+
+  return parse_it::parse_result_t<Headers>(
+    {Headers{.frame = std::move(frame->first), .method = std::move(header->first), .payload = header->second},
+     frame->second});
+}
+
+} // namespace
+
+auto parse_start(std::span<std::byte> buffer) -> parse_it::parse_result_t<Start>
+{
+  auto headers = parse_headers(buffer, ClassId::CONNECTION, ConnectionMethodId::START);
+
+  if (!headers)
   {
     return std::nullopt;
   }
@@ -78,17 +103,39 @@ auto parse_start(std::span<std::byte> buffer) -> parse_it::parse_result_t<Start>
       return Start{
         .version_major = major,
         .version_minor = minor,
-        .server_properties = properties,
-        .mechanisms = mechanisms,
-        .locales = locales};
+        .server_properties = std::move(properties),
+        .mechanisms = std::move(mechanisms),
+        .locales = std::move(locales)};
     },
-    octet_parser, octet_parser, field_table_parser, long_string_parser, long_string_parser)(header->second);
+    octet_parser, octet_parser, field_table_parser, long_string_parser, long_string_parser)(headers->first.payload);
   if (!start)
   {
     return std::nullopt;
   }
 
-  return parse_it::parse_result_t<Start>({start->first, frame->second});
+  return parse_it::parse_result_t<Start>({start->first, headers->second});
+}
+
+auto parse_start_ok(std::span<std::byte> buffer) -> parse_it::parse_result_t<StartOk>
+{
+  auto headers = parse_headers(buffer, ClassId::CONNECTION, ConnectionMethodId::START_OK);
+
+  auto start_ok = parse_it::combine(
+    [](field_table client_properties, short_string mechanism, long_string response, short_string locale) {
+      return StartOk{
+        .client_properties = std::move(client_properties),
+        .mechanism = std::move(mechanism),
+        .response = std::move(response),
+        .locale = std::move(locale)};
+    },
+    field_table_parser, short_string_parser, long_string_parser, short_string_parser)(headers->first.payload);
+
+  if (!start_ok)
+  {
+    return std::nullopt;
+  }
+
+  return parse_it::parse_result_t<StartOk>({start_ok->first, headers->second});
 }
 
 } // namespace rmq

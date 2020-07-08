@@ -16,6 +16,7 @@ with pushd(build_dir):
         '-DCMAKE_MODULE_PATH=' + os.getcwd(),
         '-DSANITIZE_ADDRESS=ON',
         '-DSANITIZE_UNDEFINED_BEHAVIOR=ON',
+        '-DCMAKE_BUILD_TYPE=Debug',
         '..'])
     print("\nBuilding...")
     subprocess.run(['cmake', '--build', '.'])
