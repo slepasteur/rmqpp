@@ -5,6 +5,7 @@
 #include <parse_it/utils/arithmetic.h>
 
 #include "messages/frame.h"
+#include "messages/method_header.h"
 #include "rmq/messages/protocol_header.h"
 #include "rmq/messages/start.h"
 #include "rmq/messages/start_ok.h"
@@ -12,8 +13,13 @@
 
 namespace rmq {
 
+inline void serialize(std::byte byte, Buffer& buffer)
+{
+  buffer.push_back(byte);
+}
+
 template <parse_it::arithmetic T, std::endian FROM_ENDIAN = std::endian::big>
-constexpr inline auto serialize(T value, Buffer& buffer)
+inline void serialize(T value, Buffer& buffer)
 {
   static_assert(
     std::endian::native == std::endian::little || std::endian::native == std::endian::big,
@@ -42,6 +48,7 @@ void serialize(const field& f, Buffer& buffer);
 void serialize(const field_table& table, Buffer& buffer);
 
 void serialize(ProtocolHeader, Buffer& buffer);
+void serialize(const MethodHeader& method_header, Buffer& buffer);
 void serialize(const Frame& frame, Buffer& buffer);
 void serialize(const Start&, Buffer& buffer);
 }

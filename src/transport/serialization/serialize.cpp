@@ -4,8 +4,11 @@
 #include <cassert>
 #include <limits>
 
+#include <fmt/format.h>
 #include <parse_it/utils/byte_litterals.h>
 
+#include "messages/class_ids.h"
+#include "messages/method_ids.h"
 #include "transport/field_value_types.h"
 #include "utils/overloaded.h"
 
@@ -16,6 +19,10 @@ using namespace parse_it::byte_litterals;
 void serialize(unit, Buffer&) {}
 
 namespace {
+
+constexpr long_uint FRAME_SIZE = sizeof(octet) + sizeof(short_uint) + sizeof(long_uint);
+constexpr long_uint FRAME_END_SIZE = sizeof(octet);
+constexpr long_uint METHOD_HEADER_SIZE = sizeof(short_uint) + sizeof(short_uint);
 
 void serialize_field_value_type(const field_value& value, Buffer& buffer)
 {
@@ -121,6 +128,7 @@ void serialize(const Frame& frame, Buffer& buffer)
 {
   serialize(frame.type, buffer);
   serialize(frame.channel, buffer);
+  serialize(frame.size, buffer);
 }
 
 void serialize(ProtocolHeader, Buffer& buffer)
@@ -128,6 +136,33 @@ void serialize(ProtocolHeader, Buffer& buffer)
   buffer.insert(buffer.end(), {'A'_b, 'M'_b, 'Q'_b, 'P'_b, 0_b, 0_b, 9_b, 1_b});
 }
 
-void serialize(const Start&, Buffer&) {}
+void serialize(const MethodHeader& method_header, Buffer& buffer)
+{
+  serialize(method_header.class_id, buffer);
+  serialize(method_header.method_id, buffer);
+}
+
+void serialize(const Start& start, Buffer& buffer)
+{
+  Buffer start_buffer;
+  serialize(start.version_major, start_buffer);
+  serialize(start.version_minor, start_buffer);
+  serialize(start.server_properties, start_buffer);
+  serialize(start.mechanisms, start_buffer);
+  serialize(start.locales, start_buffer);
+
+  auto method_header = MethodHeader{.class_id = ClassId::CONNECTION, .method_id = ConnectionMethodId::START};
+  auto frame = Frame{
+    .type = FrameType::frame_method,
+    .channel = 0,
+    .size = static_cast<long_uint>(METHOD_HEADER_SIZE + start_buffer.size()),
+    .payload = {}};
+
+  buffer.reserve(buffer.size() + FRAME_SIZE + frame.size + FRAME_END_SIZE);
+  serialize(frame, buffer);
+  serialize(method_header, buffer);
+  std::copy(start_buffer.begin(), start_buffer.end(), std::back_inserter(buffer));
+  serialize(FRAME_END, buffer);
+}
 
 } // namespace rmq

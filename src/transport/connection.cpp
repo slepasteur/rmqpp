@@ -52,26 +52,36 @@ Connection::Connection(Sender sender)
   fmt::print("Protocol header sent!\n");
 }
 
-void Connection::on_data(std::span<std::byte> data)
+bool Connection::on_data(std::span<std::byte> data)
 {
-  std::visit(
-    overloaded([this, data](details::Init) {
-      auto start_parse = parse_start(data);
-      if (!start_parse)
-      {
-        fmt::print("Failed to parse Start message.\n");
-        exit(1);
-      }
+  using namespace rmq::details;
+  state_ = std::visit(
+    overloaded(
+      [this, data](details::Init) -> State {
+        auto start_parse = parse_start(data);
+        if (!start_parse)
+        {
+          fmt::print("Failed to parse Start message.\n");
+          return Error{};
+        }
 
-      const auto& start = start_parse->first;
-      fmt::print("Broker version {}.{}\n", start.version_major, start.version_minor);
+        const auto& start = start_parse->first;
+        fmt::print("Broker version {}.{}\n", start.version_major, start.version_minor);
 
-      fmt::print("Sending start ok...\n");
-      start_response(start);
-      //send_message(rmq::StartOk{}, send_, send_buffer_);
-      fmt::print("Start ok sent!\n");
-    }),
+        fmt::print("Sending start ok...\n");
+        start_response(start);
+        //send_message(rmq::StartOk{}, send_, send_buffer_);
+        fmt::print("Start ok sent!\n");
+        return Started{};
+      },
+      [](Started s) -> State {
+        // TODO
+        return s;
+      },
+      [](Error e) -> State { return e; }),
     state_);
+
+  return !std::holds_alternative<Error>(state_);
 }
 
 }

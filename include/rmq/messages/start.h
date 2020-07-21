@@ -11,6 +11,8 @@ struct Start
   field_table server_properties;
   long_string mechanisms;
   long_string locales;
+
+  auto operator<=>(const Start&) const = default;
 };
 
 }

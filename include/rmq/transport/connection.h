@@ -12,7 +12,13 @@ namespace details {
 struct Init
 {};
 
-using State = std::variant<Init>;
+struct Started
+{};
+
+struct Error
+{};
+
+using State = std::variant<Init, Started, Error>;
 
 } // namespace details
 
@@ -24,7 +30,13 @@ public:
 public:
   explicit Connection(Sender sender);
 
-  void on_data(std::span<std::byte> data);
+  /**
+   * Method to call when new data is received on the tcp connection.
+   * @return a boolean saying if the connection is still valid (true) or if it must be discarded
+   * (false).
+   * TODO replace with proper error handling.
+   */
+  [[nodiscard]] bool on_data(std::span<std::byte> data);
 
 private:
   Sender send_;

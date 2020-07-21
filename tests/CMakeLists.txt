@@ -11,6 +11,10 @@ add_executable(rmq_tests
   unit/connection_test.cpp
 )
 
+target_include_directories(rmq_tests
+  PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR})
+
 find_package(doctest MODULE REQUIRED)
 find_package(Boost REQUIRED)
 

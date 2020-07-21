@@ -23,23 +23,26 @@ SCENARIO("Connection start")
     send_buffer.insert(send_buffer.end(), data.begin(), data.end());
   };
 
-
   GIVEN("A new connection.")
   {
     auto connection = rmq::Connection(sender);
     auto on_message = [&msg_buffer, &connection](const auto& message) {
       msg_buffer.clear();
       rmq::serialize(message, msg_buffer);
-      connection.on_data(msg_buffer);
+      return connection.on_data(msg_buffer);
     };
 
     THEN("The connection sends the protocol header.") { REQUIRE(send_buffer == protocol_header()); }
 
     WHEN("Receiving a start message.")
     {
-      on_message(rmq::Start{});
+      REQUIRE(on_message(rmq::Start{}));
 
-      THEN("A start ok message is sent.") { rmq::parse_start_ok(msg_buffer); }
+      THEN("A start ok message is sent.")
+      {
+        auto start_ok = rmq::parse_start_ok(msg_buffer);
+        //REQUIRE(start_ok);
+      }
     }
   }
 }

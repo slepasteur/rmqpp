@@ -8,6 +8,7 @@
 #include "messages/frame.h"
 #include "messages/method_header.h"
 #include "messages/method_ids.h"
+#include "utils/format_bytes.h"
 
 using namespace parse_it::byte_litterals;
 
@@ -41,7 +42,7 @@ auto parse_frame(std::span<std::byte> buffer) -> parse_it::parse_result_t<Frame>
     return std::nullopt;
   }
 
-  auto frame_end = parse_it::one_byte(0xCE_b)(payload->second);
+  auto frame_end = parse_it::one_byte(FRAME_END)(payload->second);
   if (!frame_end)
   {
     return std::nullopt;

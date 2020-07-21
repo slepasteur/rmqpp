@@ -71,7 +71,10 @@ int main()
 
     std::array<std::byte, 2048> buf;
     auto received = read_data(socket, buf);
-    connection.on_data(received);
+    if (!connection.on_data(received))
+    {
+      fmt::print("Error while processing received data.");
+    }
     //fmt::print("Received\n\n [{:#X}_b]\n\n", fmt::join(received, "_b, "));
   }
   catch (std::exception& e)

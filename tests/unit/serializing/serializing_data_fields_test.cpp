@@ -1,5 +1,6 @@
 #include <parse_it/utils/byte_litterals.h>
 
+#include "helpers/require_parsed_equal.h"
 #include "transport/parsing/data_field_parser.h"
 #include "transport/serialization/serialize.h"
 #include "utils/format_bytes.h"
@@ -8,10 +9,6 @@
 
 using namespace parse_it::byte_litterals;
 
-#define REQUIRE_PARSED_EQUAL(parsed, value)                                                                            \
-  REQUIRE(parsed);                                                                                                     \
-  REQUIRE(parsed->first == value);                                                                                     \
-  REQUIRE(parsed->second.empty());
 
 namespace {
 
