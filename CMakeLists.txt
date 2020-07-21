@@ -5,6 +5,15 @@ project(rmq
   DESCRIPTION "A RabbitMQ client library."
   LANGUAGES CXX)
 
+# Export compile commands and copy them inside the root directory for YCM
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
+IF( EXISTS "${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json" )
+  EXECUTE_PROCESS( COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
+    ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json
+  )
+ENDIF()
+
 # Link this 'library' to use the warnings specified in CompilerWarnings.cmake
 add_library(project_warnings INTERFACE)
 
