@@ -9,6 +9,7 @@
 
 #include "messages/class_ids.h"
 #include "messages/method_ids.h"
+#include "rmq/types.h"
 #include "transport/field_value_types.h"
 #include "utils/overloaded.h"
 
@@ -58,6 +59,23 @@ void serialize_field_value_value(const field_value& value, Buffer& buffer)
       [&buffer](const auto& x) { serialize(x, buffer); }, //
     },
     value);
+}
+
+void serialize_method_frame(
+  ClassId class_id, short_uint method_id, const rmq::Buffer& content_buffer, rmq::Buffer& buffer)
+{
+  auto method_header = MethodHeader{.class_id = class_id, .method_id = method_id};
+  auto frame = Frame{
+    .type = FrameType::frame_method,
+    .channel = 0,
+    .size = static_cast<long_uint>(METHOD_HEADER_SIZE + content_buffer.size()),
+    .payload = {}};
+
+  buffer.reserve(buffer.size() + FRAME_SIZE + frame.size + FRAME_END_SIZE);
+  serialize(frame, buffer);
+  serialize(method_header, buffer);
+  std::copy(content_buffer.begin(), content_buffer.end(), std::back_inserter(buffer));
+  serialize(FRAME_END, buffer);
 }
 
 } // namespace
@@ -151,18 +169,18 @@ void serialize(const Start& start, Buffer& buffer)
   serialize(start.mechanisms, start_buffer);
   serialize(start.locales, start_buffer);
 
-  auto method_header = MethodHeader{.class_id = ClassId::CONNECTION, .method_id = ConnectionMethodId::START};
-  auto frame = Frame{
-    .type = FrameType::frame_method,
-    .channel = 0,
-    .size = static_cast<long_uint>(METHOD_HEADER_SIZE + start_buffer.size()),
-    .payload = {}};
+  serialize_method_frame(ClassId::CONNECTION, ConnectionMethodId::START, start_buffer, buffer);
+}
 
-  buffer.reserve(buffer.size() + FRAME_SIZE + frame.size + FRAME_END_SIZE);
-  serialize(frame, buffer);
-  serialize(method_header, buffer);
-  std::copy(start_buffer.begin(), start_buffer.end(), std::back_inserter(buffer));
-  serialize(FRAME_END, buffer);
+void serialize(const StartOk& start_ok, Buffer& buffer)
+{
+  Buffer start_ok_buffer;
+  serialize(start_ok.client_properties, start_ok_buffer);
+  serialize(start_ok.mechanism, start_ok_buffer);
+  serialize(start_ok.response, start_ok_buffer);
+  serialize(start_ok.locale, start_ok_buffer);
+
+  serialize_method_frame(ClassId::CONNECTION, ConnectionMethodId::START_OK, start_ok_buffer, buffer);
 }
 
 } // namespace rmq

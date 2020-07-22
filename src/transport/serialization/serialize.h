@@ -51,4 +51,5 @@ void serialize(ProtocolHeader, Buffer& buffer);
 void serialize(const MethodHeader& method_header, Buffer& buffer);
 void serialize(const Frame& frame, Buffer& buffer);
 void serialize(const Start&, Buffer& buffer);
+void serialize(const StartOk&, Buffer& buffer);
 }

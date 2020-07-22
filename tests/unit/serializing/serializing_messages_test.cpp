@@ -28,3 +28,12 @@ TEST_CASE("Serializing the Start message.")
   auto parsed = rmq::parse_start(buffer);
   REQUIRE_PARSED_EQUAL(parsed, start);
 }
+
+TEST_CASE("Serializing the Start OK message.")
+{
+  rmq::Buffer buffer{};
+  auto start_ok = rmq::StartOk{};
+  rmq::serialize(start_ok, buffer);
+  auto parsed = rmq::parse_start_ok(buffer);
+  REQUIRE_PARSED_EQUAL(parsed, start_ok);
+}

@@ -40,8 +40,8 @@ SCENARIO("Connection start")
 
       THEN("A start ok message is sent.")
       {
-        auto start_ok = rmq::parse_start_ok(msg_buffer);
-        //REQUIRE(start_ok);
+        auto start_ok = rmq::parse_start_ok(send_buffer);
+        REQUIRE(start_ok);
       }
     }
   }

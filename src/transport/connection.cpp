@@ -69,8 +69,8 @@ bool Connection::on_data(std::span<std::byte> data)
         fmt::print("Broker version {}.{}\n", start.version_major, start.version_minor);
 
         fmt::print("Sending start ok...\n");
-        start_response(start);
-        //send_message(rmq::StartOk{}, send_, send_buffer_);
+        auto start_ok = start_response(start);
+        send_message(start_ok, send_, send_buffer_);
         fmt::print("Start ok sent!\n");
         return Started{};
       },

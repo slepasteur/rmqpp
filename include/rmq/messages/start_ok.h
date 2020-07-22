@@ -10,6 +10,8 @@ struct StartOk
   short_string mechanism;
   long_string response;
   short_string locale;
+
+  auto operator<=>(const StartOk&) const = default;
 };
 
 } // namespace rmq
