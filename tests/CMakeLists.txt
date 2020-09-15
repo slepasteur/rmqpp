@@ -9,6 +9,8 @@ add_executable(rmq_tests
   unit/serializing/serializing_messages_test.cpp
   unit/serializing/serializing_data_fields_test.cpp
   unit/connection_test.cpp
+  unit/utils/split_long_string_test.cpp
+  unit/utils/byte_range_to_short_string_test.cpp
 )
 
 target_include_directories(rmq_tests
